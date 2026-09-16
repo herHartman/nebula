@@ -1,0 +1,49 @@
+# Скомпилированные файлы
+*.o
+*.obj
+*.ilk
+*.pdb
+*.exp
+
+# Динамические и статические библиотеки
+*.dll
+*.so
+*.dylib
+*.lib
+*.a
+
+# Исполняемые файлы
+*.exe
+*.out
+*.app
+
+# Папки сборки
+build/
+Build/
+bin/
+obj/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+install_manifest.txt
+compile_commands.json
+
+# Visual Studio
+*.suo
+*.user
+*.userprefs
+.vs/
+
+# Временные и лог-файлы
+*.log
+*.tmp
+*.bak
+.DS_Store
+
+# Сборка/кэш
+build/
+.cache/
+.vscode/

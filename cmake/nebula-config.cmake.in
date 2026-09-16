@@ -1,0 +1,19 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_dependency(Threads)
+find_dependency(liburing)
+
+# PUBLIC-зависимость nebula::http. Ищется в том же префиксе, где лежит
+# сама nebula - будь то системный пакет или копия, поставленная вместе с нами.
+find_dependency(nlohmann_json @NEBULA_JSON_VERSION@)
+
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
+
+include("${CMAKE_CURRENT_LIST_DIR}/nebula-targets.cmake")
+
+check_required_components(nebula)
