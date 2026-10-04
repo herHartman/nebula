@@ -248,13 +248,14 @@ struct IoRequest
         return Fsync{.type = Type::kFsync, .fd = fd};
     }
 
-    constexpr static IoRequest makeSend(int fd, std::size_t length, std::byte *buffer, Flags<SendFlags> flags)
+    constexpr static IoRequest makeSend(int fd, std::size_t length, std::byte *buffer,
+                                        Flags<SendFlags> flags = Flags<SendFlags>{})
     {
         return Send{.type = Type::kSend, .fd = fd, .length = length, .buffer = buffer, .flags = flags};
     }
 
     constexpr static IoRequest makeAccept(int fd, struct ::sockaddr *addr, ::socklen_t *addrlen,
-                                          Flags<AcceptFlags> flags)
+                                          Flags<AcceptFlags> flags = Flags<AcceptFlags>{})
     {
         return Accept{.type = Type::kAccept, .fd = fd, .addr = addr, .addrlen = addrlen, .flags = flags};
     }
@@ -264,17 +265,19 @@ struct IoRequest
         return Connect{.type = Type::kConnect, .fd = fd, .addr = addr, .addrlen = addrlen};
     }
 
-    constexpr static IoRequest makeRecv(int fd, std::size_t length, std::byte *buffer, Flags<SendFlags> flags)
+    constexpr static IoRequest makeRecv(int fd, std::size_t length, std::byte *buffer,
+                                        Flags<SendFlags> flags = Flags<SendFlags>{})
     {
         return Recv{.type = Type::kRecv, .fd = fd, .length = length, .buffer = buffer, .flags = flags};
     }
 
-    constexpr static IoRequest makeSendmsg(int fd, const struct ::msghdr *msg, Flags<SendFlags> flags)
+    constexpr static IoRequest makeSendmsg(int fd, const struct ::msghdr *msg,
+                                           Flags<SendFlags> flags = Flags<SendFlags>{})
     {
         return Sendmsg{.type = Type::kSendmsg, .fd = fd, .msg = msg, .flags = flags};
     }
 
-    constexpr static IoRequest makeRecvmsg(int fd, struct ::msghdr *msg, Flags<SendFlags> flags)
+    constexpr static IoRequest makeRecvmsg(int fd, struct ::msghdr *msg, Flags<SendFlags> flags = Flags<SendFlags>{})
     {
         return Recvmsg{.type = Type::kRecvmsg, .fd = fd, .msg = msg, .flags = flags};
     }

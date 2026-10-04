@@ -16,7 +16,7 @@
 #include <string>
 #include <unordered_map>
 
-class HttpBodyStreamReader;
+class BodyReader;
 
 namespace nebula::http
 {
@@ -27,8 +27,8 @@ class HttpRequest
     using PathArgs = std::unordered_map<std::string, std::string>;
 
     HttpRequest(std::size_t contentLength, HttpMethods method, HttpHeaders headers, std::string host,
-                std::string httpVersion, std::shared_ptr<HttpBodyStreamReader> body, std::string path,
-                QueryArgs queryArgs, PathArgs pathArgs);
+                std::string httpVersion, std::shared_ptr<BodyReader> body, std::string path, QueryArgs queryArgs,
+                PathArgs pathArgs);
 
     [[nodiscard]] pulsar::Task<std::string> readAll();
 
@@ -40,7 +40,7 @@ class HttpRequest
     [[nodiscard]] std::size_t getContentLength() const noexcept;
     [[nodiscard]] const std::string &getPath() const noexcept;
     [[nodiscard]] HttpMethods getMethod() const noexcept;
-    [[nodiscard]] const std::shared_ptr<HttpBodyStreamReader> &getStreamReader() const noexcept;
+    [[nodiscard]] const std::shared_ptr<BodyReader> &getBodyReader() const noexcept;
     [[nodiscard]] const std::string &getHttpVersion() const noexcept;
     [[nodiscard]] const std::string &getHost() const noexcept;
 
@@ -71,7 +71,7 @@ class HttpRequest
     std::size_t mContentLength;
     HttpMethods mMethod;
     HttpHeaders mHeaders;
-    std::shared_ptr<HttpBodyStreamReader> mStreamReader;
+    std::shared_ptr<BodyReader> mBodyReader;
     std::string mHost;
     std::string mHttpVersion;
     std::string mPath;

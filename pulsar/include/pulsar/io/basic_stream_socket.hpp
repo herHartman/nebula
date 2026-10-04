@@ -2,36 +2,68 @@
 
 #include "pulsar/io/basic_socket.hpp"
 #include <cstddef>
+#include <expected>
 #include <span>
+#include <system_error>
 
 namespace pulsar::io
 {
+namespace detail
+{
+[[nodiscard]] inline std::error_code error_from_res(int res) noexcept
+{
+    return {-res, std::system_category()};
+}
+} // namespace detail
+
 template <typename Protocol>
 class BasicStreamSocket : public BasicSocket<Protocol>
 {
   public:
     using BasicSocket<Protocol>::BasicSocket;
 
-    Task<std::size_t> read(std::span<std::byte> buffer)
-    {
-        int n = co_await IoAwaitable{IoRequest::makeRecv(this->fd(), buffer.size(), buffer.data(), Flags<SendFlags>{})};
-        co_return static_cast<std::size_t>(n);
-    }
+    template <typename T>
+    using Result = std::expected<T, std::error_code>;
 
-    Task<std::size_t> write(std::span<const std::byte> buffer)
+    Task<Result<std::size_t>> read(std::span<std::byte> buffer)
     {
-        int n =
-            co_await IoAwaitable{IoRequest::makeSend(this->fd(), buffer.size(), const_cast<std::byte *>(buffer.data()),
-                                                     Flags<SendFlags>{} | SendFlags::kMsgNosignal)};
-        co_return static_cast<std::size_t>(n);
-    }
+        const auto recvRequest = IoRequest::makeRecv(this->fd(), buffer.size(), buffer.data());
+        const int n = co_await IoAwaitable{recvRequest};
 
-    Task<void> writeAll(std::span<const std::byte> buffer)
-    {
-        std::size_t written = 0;
-        while (written < buffer.size())
+        if (n < 0)
         {
-            written += co_await write(buffer.subspan(written));
+            co_return std::unexpected(detail::error_from_res(n));
+        }
+        co_return static_cast<std::size_t>(n);
+    }
+
+    Task<Result<std::size_t>> write(std::span<const std::byte> buffer)
+    {
+        std::byte *rawBuffer = const_cast<std::byte *>(buffer.data());
+        const auto sendRequest = IoRequest::makeSend(this->fd(), buffer.size(), rawBuffer, SendFlags::kMsgNosignal);
+        const int n = co_await IoAwaitable{sendRequest};
+
+        if (n < 0)
+        {
+            co_return std::unexpected(detail::error_from_res(n));
+        }
+        co_return static_cast<std::size_t>(n);
+    }
+
+    Task<Result<void>> writeAll(std::span<const std::byte> buffer)
+    {
+        while (!buffer.empty())
+        {
+            const auto result = co_await write(buffer);
+            if (!result)
+            {
+                co_return std::unexpected(result.error());
+            }
+            if (result.value() == 0)
+            {
+                co_return std::unexpected(std::make_error_code(std::errc::io_error));
+            }
+            buffer = buffer.subspan(result.value());
         }
     }
 };
