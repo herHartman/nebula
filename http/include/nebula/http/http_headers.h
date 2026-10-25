@@ -8,9 +8,28 @@ namespace nebula::http
 {
 using HeaderValue = std::string;
 using HeaderKey = std::string;
-using HeaderValues = std::unordered_map<HeaderKey, std::vector<HeaderValue>>;
 
-class HttpHeaders
+struct StringHash
+{
+    using is_transparent = void;
+
+    std::size_t operator()(std::string_view sv) const
+    {
+        return std::hash<std::string_view>{}(sv);
+    }
+
+    std::size_t operator()(const std::string &s) const
+    {
+        return std::hash<std::string>{}(s);
+    }
+
+    std::size_t operator()(const char *str) const
+    {
+        return std::hash<std::string_view>{}(str);
+    }
+};
+
+using HeaderValues = std::unordered_map<HeaderKey, std::vector<HeaderValue>, StringHash, std::equal_to<>>; class HttpHeaders
 {
   public:
     using Iterator = HeaderValues::iterator;
@@ -67,8 +86,7 @@ class HttpHeaders
     void set(const HeaderKey &key, HeaderValue value);
     void set(const HeaderKey &key, std::vector<HeaderValue> values);
 
-    void add(const HeaderKey &key, HeaderValue value);
-    void add(const HeaderKey &key, std::vector<HeaderValue> values);
+    void add(const HeaderKey &key, HeaderValue value); void add(const HeaderKey &key, std::vector<HeaderValue> values);
 
     void setBasicAuth(std::string username, std::string password);
     void setBearerAuth(std::string token);

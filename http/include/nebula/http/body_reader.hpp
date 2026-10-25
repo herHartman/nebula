@@ -23,11 +23,11 @@ class BodyReader
 
     [[nodiscard]] pulsar::Task<Result<std::size_t>> readSome(std::span<std::byte> buffer);
     [[nodiscard]] pulsar::Task<Result<std::vector<std::byte>>> readAll(std::size_t maxSize);
-    [[nodiscard]] pulsar::Task<Result<void>> drain();
+    [[nodiscard]] pulsar::Task<std::error_code> drain();
 
   private:
-    Reader *mReader = nullptr;
+    Reader& mReader;
     std::size_t mContentLength = 0;
-    std::size_t mReadSize = 0;
+    std::size_t mConsumed = 0;
 };
 } // namespace nebula::http
