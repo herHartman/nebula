@@ -2,6 +2,7 @@
 #include "http_parser.h"
 #include "nebula/http/detail/utils.hpp"
 #include "nebula/http/http_methods.h"
+#include "nebula/http/query_args.hpp"
 #include <optional>
 #include <string>
 #include <utility>
@@ -79,7 +80,7 @@ bool RequestParser::flushUrl()
     
     if (auto query = field(UF_QUERY))
     {
-        std::unordered_map<std::string, std::string> queryArgs;
+        QueryArgs queryArgs;
         if (!detail::parse_query(query.value(), queryArgs))
         {
             mError = ParseError::BadRequest;
@@ -92,6 +93,8 @@ bool RequestParser::flushUrl()
 
 void RequestParser::flushHeader()
 {
+    mHeaderSize += mHeaderSize;
+ 
     auto end = mHeaderValue.find_first_not_of(" \t");
     if (end != std::string::npos)
     {
@@ -102,6 +105,7 @@ void RequestParser::flushHeader()
     mHeaderValue.clear();
     mHeaderKey.clear();
     mIsHeaderKey = true;
+    mHeaderSize = 0;
 }
 
 int RequestParser::onMessageBegin(http_parser *parser)

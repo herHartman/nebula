@@ -76,7 +76,7 @@ std::size_t BodyReader::contentLength() const noexcept
         }
         else if (result.value() == 0)
         {
-            co_return std::make_error_code(std::errc::connection_aborted);
+            co_return std::unexpected(std::make_error_code(std::errc::connection_aborted));
         }
         readSize += result.value();
     }

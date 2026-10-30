@@ -4,6 +4,7 @@
 
 set(HTTP_SOURCES
     http_headers.cpp
+    detail/utils.cpp
 )
 
 set(HTTP_HEADERS

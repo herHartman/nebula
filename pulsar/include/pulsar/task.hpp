@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <coroutine>
 #include <exception>
 #include <optional>
@@ -15,7 +16,8 @@ struct PromiseValue
 {
     std::optional<T> value;
 
-    template <typename U>
+    template <typename U = T>
+        requires std::convertible_to<U, T>
     void return_value(U &&v)
     {
         value.emplace(std::forward<U>(v));
