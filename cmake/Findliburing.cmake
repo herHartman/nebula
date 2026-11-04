@@ -1,14 +1,3 @@
-# Findliburing.cmake
-#
-# Ищет liburing и определяет IMPORTED-таргет liburing::liburing.
-#
-# Сначала пробуем pkg-config (нормальный путь на Linux-дистрибутивах),
-# если его нет или .pc-файл не установлен - откатываемся на ручной
-# find_path/find_library. Это важно, потому что liburing собранный
-# вручную (make install в /usr/local) .pc кладёт не всегда.
-#
-# Переменные для подсказки: LIBURING_ROOT / переменная окружения LIBURING_ROOT.
-
 if(TARGET liburing::liburing)
     return()
 endif()

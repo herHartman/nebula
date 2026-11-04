@@ -14,7 +14,6 @@ else()
         EXCLUDE_FROM_ALL
         SYSTEM
     )
-    # Не ставить gtest вместе с nebula и не собирать его gmock/тесты.
     set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
     set(BUILD_GMOCK   OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)

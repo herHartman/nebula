@@ -1,19 +1,16 @@
 #pragma once
 
+#include "pulsar/result.hpp"
 #include "pulsar/task.hpp"
+
 #include <array>
 #include <assert.h>
 #include <cstddef>
 #include <cstring>
-#include <expected>
 #include <span>
-#include <system_error>
 
 namespace pulsar::io
 {
-template <typename T>
-using Result = std::expected<T, std::error_code>;
-
 template <typename Stream, std::size_t BufferSize = 16 * 1024>
 class BufferedReader
 {

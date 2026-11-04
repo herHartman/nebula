@@ -8,22 +8,22 @@
 
 namespace nebula::http
 {
-BodyReader::BodyReader(Reader &reader, std::size_t contentLength) noexcept
+BasicBodyReader::BasicBodyReader(Reader &reader, std::size_t contentLength) noexcept
     : mReader(reader), mContentLength(contentLength)
 {
 }
 
-std::size_t BodyReader::remaining() const noexcept
+std::size_t BasicBodyReader::remaining() const noexcept
 {
     return mContentLength - mConsumed;
 }
 
-std::size_t BodyReader::contentLength() const noexcept
+std::size_t BasicBodyReader::contentLength() const noexcept
 {
     return mContentLength;
 }
 
-[[nodiscard]] pulsar::Task<BodyReader::Result<std::size_t>> BodyReader::readSome(std::span<std::byte> buffer)
+[[nodiscard]] pulsar::Task<BodyReader::Result<std::size_t>> BasicBodyReader::readSome(std::span<std::byte> buffer)
 {
     if (remaining() == 0)
     {
@@ -55,7 +55,7 @@ std::size_t BodyReader::contentLength() const noexcept
     co_return readSize;
 }
 
-[[nodiscard]] pulsar::Task<BodyReader::Result<std::vector<std::byte>>> BodyReader::readAll(std::size_t maxSize)
+[[nodiscard]] pulsar::Task<BodyReader::Result<std::vector<std::byte>>> BasicBodyReader::readAll(std::size_t maxSize)
 {
     if (remaining() > maxSize)
     {
@@ -84,7 +84,7 @@ std::size_t BodyReader::contentLength() const noexcept
     co_return outputBuffer;
 }
 
-[[nodiscard]] pulsar::Task<std::error_code> BodyReader::drain()
+[[nodiscard]] pulsar::Task<std::error_code> BasicBodyReader::drain()
 {
     std::array<std::byte, 16384> buffer;
     static constexpr std::size_t kMaxDrainSize = 256 * 1024;

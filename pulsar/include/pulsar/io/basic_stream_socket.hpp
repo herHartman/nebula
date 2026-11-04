@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pulsar/io/basic_socket.hpp"
+#include "pulsar/result.hpp"
 #include <cstddef>
 #include <expected>
 #include <span>
@@ -21,9 +22,6 @@ class BasicStreamSocket : public BasicSocket<Protocol>
 {
   public:
     using BasicSocket<Protocol>::BasicSocket;
-
-    template <typename T>
-    using Result = std::expected<T, std::error_code>;
 
     Task<Result<std::size_t>> read(std::span<std::byte> buffer)
     {
