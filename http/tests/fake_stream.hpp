@@ -32,7 +32,7 @@ public:
 
     pulsar::Task<pulsar::Result<std::size_t>> read(std::span<std::byte> buffer)
     {
-        if (mSteps.empty())
+        if (mStep == mSteps.size())
         {
             co_return 0;
         }
@@ -42,12 +42,12 @@ public:
             co_return std::unexpected(*ec);
         }
 
-        std::vector<std::byte>& data = std::get<std::vector<std::byte>>(mSteps[mStep]);
-        const std::size_t toCopy = std::min(buffer.size(), data.size());
-        std::ranges::copy(std::span(data).subspan(mOffset, toCopy), buffer.begin());
+        std::vector<std::byte>& chunk = std::get<std::vector<std::byte>>(mSteps[mStep]);
+        const std::size_t toCopy = std::min(buffer.size(), chunk.size());
+        std::ranges::copy(std::span(chunk).subspan(mOffset, toCopy), buffer.begin());
         mOffset += toCopy;
 
-        if (mOffset == data.size()) 
+        if (mOffset == chunk.size()) 
         {
             ++mStep;
         }
