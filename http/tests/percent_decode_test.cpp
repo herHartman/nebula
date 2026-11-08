@@ -74,4 +74,4 @@ TEST(PercentDecode, Table)
         }
     }
 }
-}
+} // namespace nebula::http::test

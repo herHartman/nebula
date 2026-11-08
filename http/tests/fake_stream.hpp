@@ -60,4 +60,4 @@ private:
     std::size_t mOffset = 0;
     std::size_t mStep = 0;
 };
-}
+} // namespace nebula::http::test
