@@ -4,6 +4,7 @@
 
 set(HTTP_SOURCES
     http_headers.cpp
+    detail/utils.cpp
 )
 
 set(HTTP_HEADERS
@@ -12,7 +13,8 @@ set(HTTP_HEADERS
 )
 list(TRANSFORM HTTP_HEADERS PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../include/nebula/http/")
 
-add_library(http STATIC ${HTTP_SOURCES} ${HTTP_HEADERS})
+add_library(http STATIC ${HTTP_SOURCES} ${HTTP_HEADERS}
+    body_reader.cpp)
 add_library(nebula::http ALIAS http)
 
 set_target_properties(http PROPERTIES
@@ -34,6 +36,7 @@ target_link_libraries(http
         # таргет обязан дойти до потребителя. $<BUILD_INTERFACE:> здесь
         # применять НЕЛЬЗЯ - потребитель не соберётся.
         nlohmann_json::nlohmann_json
+        nebula::pulsar
     PRIVATE
         nebula::http_parser
         nebula::warnings

@@ -1,97 +1,59 @@
 #pragma once
 
+#include "nebula/http/helpers.h"
 #include "nebula/http/http_headers.h"
 #include "nebula/http/http_methods.h"
-#include <string>
-#include <unordered_map>
-
-#include "nebula/http/helpers.h"
-#include "pulsar/task.hpp"
+#include "nebula/http/query_args.hpp"
 
 #include <nlohmann/json.hpp>
 
-#include <cstddef>
+#include <format>
 #include <span>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
-
-class HttpBodyStreamReader;
 
 namespace nebula::http
 {
 class HttpRequest
 {
   public:
-    using QueryArgs = std::unordered_map<std::string, std::string>;
-    using PathArgs = std::unordered_map<std::string, std::string>;
+    HttpRequest(HttpMethods method, HttpHeaders headers, std::string httpVersion, std::string path,
+                QueryArgs queryArgs);
 
-    HttpRequest(std::size_t contentLength, HttpMethods method, HttpHeaders headers, std::string host,
-                std::string httpVersion, std::shared_ptr<HttpBodyStreamReader> body, std::string path,
-                QueryArgs queryArgs, PathArgs pathArgs);
+    std::string_view getPath() const noexcept;
+    HttpMethods getMethod() const noexcept;
+    std::string_view getHttpVersion() const noexcept;
+    std::string_view getHost() const noexcept;
 
-    [[nodiscard]] pulsar::Task<std::string> readAll();
-
-    [[nodiscard]] pulsar::Task<nlohmann::json> readJson();
-
-    template <typename T>
-    [[nodiscard]] pulsar::Task<T> readBody();
-
-    [[nodiscard]] std::size_t getContentLength() const noexcept;
-    [[nodiscard]] const std::string &getPath() const noexcept;
-    [[nodiscard]] HttpMethods getMethod() const noexcept;
-    [[nodiscard]] const std::shared_ptr<HttpBodyStreamReader> &getStreamReader() const noexcept;
-    [[nodiscard]] const std::string &getHttpVersion() const noexcept;
-    [[nodiscard]] const std::string &getHost() const noexcept;
-
-    [[nodiscard]] const std::string *findHeader(const std::string &name) const noexcept;
-    [[nodiscard]] std::span<const std::string> getHeaders(const std::string &name) const noexcept;
+    std::optional<std::string_view> findHeader(std::string_view name) const noexcept;
+    std::span<const std::string> getHeaders(std::string_view name) const noexcept;
 
     template <typename T>
-    [[nodiscard]] T getQueryArg(const std::string &argName) const;
+    T getQueryArg(std::string_view argName) const;
     template <typename T>
-    [[nodiscard]] T getQueryArg(const std::string &argName, const T &defaultParam) const;
-
-    template <typename T>
-    [[nodiscard]] T getPathArg(const std::string &argName) const;
-    template <typename T>
-    [[nodiscard]] T getPathArg(const std::string &argName, const T &defaultParam) const;
+    T getQueryArg(std::string_view argName, const T &defaultParam) const;
 
   private:
     template <typename T>
-    static T convertArg(const std::unordered_map<std::string, std::string> &args, const std::string &argName,
-                        const char *kind);
+    static T convertArg(const QueryArgs &args, std::string_view argName);
 
     template <typename T>
-    static T convertArgOr(const std::unordered_map<std::string, std::string> &args, const std::string &argName,
-                          const T &defaultParam);
+    static T convertArgOr(const QueryArgs &args, std::string_view argName, const T &defaultParam);
 
     QueryArgs mQueryArgs;
-    PathArgs mPathArgs;
-    std::size_t mContentLength;
     HttpMethods mMethod;
     HttpHeaders mHeaders;
-    std::shared_ptr<HttpBodyStreamReader> mStreamReader;
-    std::string mHost;
     std::string mHttpVersion;
     std::string mPath;
 };
 
 template <typename T>
-pulsar::Task<T> HttpRequest::readBody()
-{
-    nlohmann::json body = co_await readJson();
-    co_return body.get<T>();
-}
-
-template <typename T>
-T HttpRequest::convertArg(const std::unordered_map<std::string, std::string> &args, const std::string &argName,
-                          const char *kind)
+T HttpRequest::convertArg(const QueryArgs &args, std::string_view argName)
 {
     const auto it = args.find(argName);
     if (it == args.end())
     {
-        throw std::runtime_error(std::string(kind) + " arg not found: " + argName);
+        throw std::runtime_error(std::format("Arg not found, arg name: {}", argName));
     }
 
     try
@@ -100,13 +62,13 @@ T HttpRequest::convertArg(const std::unordered_map<std::string, std::string> &ar
     }
     catch (const std::exception &e)
     {
-        throw std::runtime_error(std::string(e.what()) + " (arg: " + argName + ")");
+        throw std::runtime_error(
+            std::format("Exception during parse query, ex was: {}, arg name: {}", e.what(), argName));
     }
 }
 
 template <typename T>
-T HttpRequest::convertArgOr(const std::unordered_map<std::string, std::string> &args, const std::string &argName,
-                            const T &defaultParam)
+T HttpRequest::convertArgOr(const QueryArgs& args, std::string_view argName, const T &defaultParam)
 {
     const auto it = args.find(argName);
     if (it == args.end())
@@ -125,26 +87,14 @@ T HttpRequest::convertArgOr(const std::unordered_map<std::string, std::string> &
 }
 
 template <typename T>
-T HttpRequest::getQueryArg(const std::string &argName) const
+T HttpRequest::getQueryArg(std::string_view argName) const
 {
     return convertArg<T>(mQueryArgs, argName, "query");
 }
 
 template <typename T>
-T HttpRequest::getQueryArg(const std::string &argName, const T &defaultParam) const
+T HttpRequest::getQueryArg(std::string_view argName, const T &defaultParam) const
 {
     return convertArgOr<T>(mQueryArgs, argName, defaultParam);
-}
-
-template <typename T>
-T HttpRequest::getPathArg(const std::string &argName) const
-{
-    return convertArg<T>(mPathArgs, argName, "path");
-}
-
-template <typename T>
-T HttpRequest::getPathArg(const std::string &argName, const T &defaultParam) const
-{
-    return convertArgOr<T>(mPathArgs, argName, defaultParam);
 }
 } // namespace nebula::http

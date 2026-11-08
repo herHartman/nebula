@@ -6,7 +6,6 @@
 #include <string>
 #include <cstdint>
 #include <optional>
-#include <vector>
 
 using pulsar::Task;
 

@@ -18,7 +18,7 @@ class Flags
     {
     }
 
-    constexpr explicit Flags(Enum e) noexcept : mValue(static_cast<underlying>(e))
+    constexpr Flags(Enum e) noexcept : mValue(static_cast<underlying>(e))
     {
     }
 

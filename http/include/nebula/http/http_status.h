@@ -126,9 +126,6 @@ enum class HttpStatus : std::uint16_t
 }
 
 // Reason phrase по RFC 9110. Для неизвестного кода - "Unknown".
-//
-// switch намеренно без default: тогда -Wswitch напомнит дописать фразу,
-// если в enum добавят новый статус.
 [[nodiscard]] constexpr std::string_view reasonPhrase(HttpStatus status) noexcept
 {
     switch (status)

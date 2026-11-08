@@ -1,6 +1,3 @@
-# Вендоренный http_parser (C, не C++). Отдельный таргет без nebula::warnings -
-# чужой код чинить предупреждениями мы не будем.
-
 if(NOT CMAKE_C_COMPILER_LOADED)
     enable_language(C)
 endif()

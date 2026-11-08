@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.28)
 
 project(nebula
     VERSION 0.1.0
@@ -7,42 +7,26 @@ project(nebula
     LANGUAGES CXX
 )
 
-# PROJECT_IS_TOP_LEVEL появился только в 3.21 - определяем сами,
-# чтобы проект корректно работал как add_subdirectory/FetchContent зависимость.
-if(NOT DEFINED PROJECT_IS_TOP_LEVEL)
-    if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-        set(PROJECT_IS_TOP_LEVEL ON)
-    else()
-        set(PROJECT_IS_TOP_LEVEL OFF)
-    endif()
-endif()
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 include(GNUInstallDirs)
 include(CMakeDependentOption)
 
-# ---------------------------------------------------------------------------
-# Опции
-# ---------------------------------------------------------------------------
-# Примеры/тесты по умолчанию собираются только когда nebula - корневой проект.
 cmake_dependent_option(NEBULA_BUILD_EXAMPLES "Build examples" ON "PROJECT_IS_TOP_LEVEL" OFF)
 cmake_dependent_option(NEBULA_BUILD_TESTS    "Build tests"    ON "PROJECT_IS_TOP_LEVEL" OFF)
 
+option(NEBULA_USE_SYSTEM_GTEST  "Использовать системный GTest вместо FetchContent" OFF)
+option(NEBULA_BUILD_HTTP        "Build the HTTP layer"                  ON)
 option(NEBULA_ENABLE_SANITIZERS "Enable ASan+UBSan"                     OFF)
 option(NEBULA_ENABLE_TSAN       "Enable ThreadSanitizer (xor с ASan)"   OFF)
 option(NEBULA_ENABLE_WERROR     "Treat warnings as errors"              OFF)
 option(NEBULA_NATIVE_ARCH       "Build with -march=native (не переносимо!)" OFF)
-cmake_dependent_option(NEBULA_BUILD_HTTP "Build the HTTP layer" ON "PROJECT_IS_TOP_LEVEL" ON)
 option(NEBULA_INSTALL           "Generate install/export rules"         ${PROJECT_IS_TOP_LEVEL})
 
 if(NEBULA_ENABLE_SANITIZERS AND NEBULA_ENABLE_TSAN)
     message(FATAL_ERROR "NEBULA_ENABLE_SANITIZERS (ASan) и NEBULA_ENABLE_TSAN несовместимы - выберите что-то одно")
 endif()
 
-# ---------------------------------------------------------------------------
-# Глобальные настройки (только для top-level сборки, чтобы не ломать родителя)
-# ---------------------------------------------------------------------------
 if(PROJECT_IS_TOP_LEVEL)
     set(CMAKE_CXX_STANDARD 23)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -50,7 +34,6 @@ if(PROJECT_IS_TOP_LEVEL)
 
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-    # Без этого дефолтная сборка (`cmake -B build`) идёт вообще без -O и без -g.
     get_property(_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if(NOT _is_multi_config AND NOT CMAKE_BUILD_TYPE)
         set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
@@ -59,7 +42,6 @@ if(PROJECT_IS_TOP_LEVEL)
         message(STATUS "CMAKE_BUILD_TYPE не задан - используется RelWithDebInfo")
     endif()
 
-    # Статические либы и объектники в build/lib, бинари в build/bin.
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
@@ -71,22 +53,12 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
     message(FATAL_ERROR "nebula использует io_uring и собирается только под Linux (текущая цель: ${CMAKE_SYSTEM_NAME})")
 endif()
 
-# ---------------------------------------------------------------------------
-# Зависимости
-# ---------------------------------------------------------------------------
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 find_package(liburing REQUIRED)
 
 include(nebula-deps)
 
-# ---------------------------------------------------------------------------
-# Общие настройки компиляции как INTERFACE-таргеты.
-#
-# Намеренно НЕ add_compile_options() на весь проект: глобальные флаги
-# протекают в third_party и в FetchContent-зависимости (googletest),
-# где чужие варнинги нам не нужны, а -Werror их просто уронит.
-# ---------------------------------------------------------------------------
 add_library(nebula_warnings INTERFACE)
 add_library(nebula::warnings ALIAS nebula_warnings)
 target_compile_options(nebula_warnings INTERFACE
@@ -121,7 +93,7 @@ if(NEBULA_NATIVE_ARCH)
         target_compile_options(nebula_options INTERFACE
             $<$<COMPILE_LANGUAGE:CXX>:-march=native>)
     else()
-        message(WARNING "-march=native не поддерживается компилятором, опция проигнорирована")
+        message(WARNING "-march=native is not supported, ignore")
     endif()
 endif()
 
@@ -139,14 +111,14 @@ if(NEBULA_ENABLE_TSAN)
     target_link_options(nebula_options INTERFACE -fsanitize=thread)
 endif()
 
-# ---------------------------------------------------------------------------
-# Подпроекты
-# ---------------------------------------------------------------------------
+if(NEBULA_BUILD_TESTS)
+    enable_testing()
+    include(NebulaTesting)
+endif()
+
 add_subdirectory(pulsar)
 
 if(NEBULA_BUILD_HTTP)
-    # Строго до http/: nebula::http линкуется к nebula::http_parser, а имена
-    # с "::" обязаны существовать на момент target_link_libraries().
     add_subdirectory(third_party)
     add_subdirectory(http)
 endif()
@@ -155,12 +127,15 @@ if(NEBULA_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-# enable_testing() обязан быть в корневом CMakeLists, иначе `ctest` из
-# корня build-дерева не увидит ни одного теста.
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
 if(NEBULA_BUILD_TESTS)
-    enable_testing()
+    add_subdirectory(pulsar/tests)
+    if(NEBULA_BUILD_HTTP)
+        add_subdirectory(http/tests)
+    endif()
 endif()
-add_subdirectory(pulsar/tests)
 
 # ---------------------------------------------------------------------------
 # Install / export
