@@ -6,15 +6,12 @@ namespace nebula::http
 {
 enum class HttpMethods : std::uint16_t
 {
-    Options = 0,
-    Get,
-    Head,
-    Post,
-    Put,
-    Patch,
-    Delete,
-    Trace,
-    Connect,
-    Count,
+    Options = 1 << 0,
+    Get = 1 << 1,
+    Head = 1 << 2,
+    Post = 1 << 3,
+    Put = 1 << 4,
+    Patch = 1 << 5,
+    Delete = 1 << 6,
 };
 } // namespace nebula::http

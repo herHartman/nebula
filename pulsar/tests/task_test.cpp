@@ -2,10 +2,10 @@
 
 #include <gtest/gtest.h>
 
-#include <stdexcept>
-#include <string>
 #include <cstdint>
 #include <optional>
+#include <stdexcept>
+#include <string>
 
 using pulsar::Task;
 
@@ -38,7 +38,7 @@ Task<int> thrower()
     co_return 1; // недостижимо, но делает функцию корутиной
 }
 
-Task<void> setFlag(bool& flag)
+Task<void> setFlag(bool &flag)
 {
     flag = true;
     co_return;
@@ -50,14 +50,14 @@ Task<int> catcher()
     {
         co_return co_await thrower();
     }
-    catch (const std::runtime_error&)
+    catch (const std::runtime_error &)
     {
         co_return -1;
     }
 }
 
 template <typename T>
-Task<void> collectInto(Task<T> task, std::optional<T>& out)
+Task<void> collectInto(Task<T> task, std::optional<T> &out)
 {
     out = co_await task;
 }
@@ -67,7 +67,8 @@ Task<void> awaitVoid(Task<void> task)
     co_await task;
 }
 
-template <typename T> T syncAwait(Task<T> task)
+template <typename T>
+T syncAwait(Task<T> task)
 {
     std::optional<T> out;
     auto wrapper = collectInto<T>(std::move(task), out);
@@ -121,7 +122,7 @@ TEST(Task, ExceptionPropagatesToAwaiter)
     EXPECT_EQ(syncAwait(catcher()), -1);
 }
 
-Task<void> detachedThrower(bool& reachedEnd)
+Task<void> detachedThrower(bool &reachedEnd)
 {
     throw std::runtime_error("boom");
     reachedEnd = true;

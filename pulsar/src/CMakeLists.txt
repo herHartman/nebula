@@ -39,6 +39,7 @@ target_include_directories(pulsar
 
 target_link_libraries(pulsar
     PUBLIC
+        nebula::core
         Threads::Threads
         liburing::liburing
     PRIVATE

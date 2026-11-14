@@ -13,30 +13,30 @@ using namespace test_support;
 
 namespace
 {
-Task<void> touchFlag(bool& flag)
+Task<void> touchFlag(bool &flag)
 {
     flag = true;
     co_return;
 }
 
-Task<void> bump(int& counter)
+Task<void> bump(int &counter)
 {
     ++counter;
     co_return;
 }
 
-Task<void> acceptForever(net::TcpAcceptor& acceptor)
+Task<void> acceptForever(net::TcpAcceptor &acceptor)
 {
     co_await acceptor.accept();
 }
 
-Task<void> stopContext(IoContext& ctx)
+Task<void> stopContext(IoContext &ctx)
 {
     ctx.stop();
     co_return;
 }
 
-Task<void> connectExpectingFailure(std::uint16_t port, std::error_code& out)
+Task<void> connectExpectingFailure(std::uint16_t port, std::error_code &out)
 {
     net::TcpSocket socket;
     socket.open();
@@ -44,13 +44,13 @@ Task<void> connectExpectingFailure(std::uint16_t port, std::error_code& out)
     {
         co_await socket.connect(ip::Endpoint::v4("127.0.0.1", port));
     }
-    catch (const std::system_error& e)
+    catch (const std::system_error &e)
     {
         out = e.code();
     }
 }
 
-Task<void> spawnMany(int count, int& counter)
+Task<void> spawnMany(int count, int &counter)
 {
     for (int i = 0; i < count; ++i)
     {

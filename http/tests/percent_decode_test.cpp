@@ -3,7 +3,7 @@
 
 namespace nebula::http::detail::test
 {
-TEST(PercentDecode, DecodeSimpleUrl) 
+TEST(PercentDecode, DecodeSimpleUrl)
 {
     constexpr std::string_view kNormalUrl = "http://test.com";
     std::string out;
@@ -16,7 +16,7 @@ TEST(PercentDecode, DecodeUrlEncoded)
 {
     constexpr std::string_view kUrl = "https://test.com/hello%20world%3F";
     std::string out;
-    
+
     EXPECT_TRUE(percent_decode(kUrl, out));
     EXPECT_EQ(out, "https://test.com/hello world?");
 }
@@ -26,10 +26,10 @@ TEST(PercentDecode, IncorrectString)
     std::string out;
     EXPECT_FALSE(percent_decode("https://test.com/hello%2world%3F", out));
     out.clear();
-    
+
     EXPECT_FALSE(percent_decode("http://test.com/hello%test", out));
     out.clear();
-    
+
     EXPECT_FALSE(percent_decode("http://test.com/hello%", out));
     out.clear();
 
@@ -40,7 +40,7 @@ TEST(PercentDecode, IncorrectString)
 TEST(PercentDecode, EmptyString)
 {
     std::string out;
-    
+
     EXPECT_TRUE(percent_decode("", out));
     EXPECT_TRUE(out.empty());
 }
@@ -54,12 +54,8 @@ struct Case
 TEST(PercentDecode, Table)
 {
     const Case cases[] = {
-        {"abc%20", "abc "},
-        {"abc%2", std::nullopt},
-        {"%2520", "%20"},
-        {"%2f", "/"},
-        {"%-1", std::nullopt},
-        {"%FF", "\xFF"},
+        {"abc%20", "abc "}, {"abc%2", std::nullopt}, {"%2520", "%20"},
+        {"%2f", "/"},       {"%-1", std::nullopt},   {"%FF", "\xFF"},
     };
 
     for (const auto &[input, expected] : cases)
@@ -74,4 +70,4 @@ TEST(PercentDecode, Table)
         }
     }
 }
-} // namespace nebula::http::test
+} // namespace nebula::http::detail::test

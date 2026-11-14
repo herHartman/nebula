@@ -116,6 +116,7 @@ if(NEBULA_BUILD_TESTS)
     include(NebulaTesting)
 endif()
 
+add_subdirectory(core)
 add_subdirectory(pulsar)
 
 if(NEBULA_BUILD_HTTP)

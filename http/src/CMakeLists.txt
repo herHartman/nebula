@@ -36,6 +36,7 @@ target_link_libraries(http
         # таргет обязан дойти до потребителя. $<BUILD_INTERFACE:> здесь
         # применять НЕЛЬЗЯ - потребитель не соберётся.
         nlohmann_json::nlohmann_json
+        nebula::core
         nebula::pulsar
     PRIVATE
         nebula::http_parser

@@ -23,14 +23,14 @@ Task<void> handleConnection(net::TcpSocket socket)
             co_await socket.writeAll(std::span(buffer).first(n));
         }
     }
-    catch (const std::exception& e)
+    catch (const std::exception &e)
     {
         std::cerr << "connection error: " << e.what() << '\n';
     }
     co_await socket.close();
 }
 
-Task<void> acceptLoop(net::TcpAcceptor& acceptor)
+Task<void> acceptLoop(net::TcpAcceptor &acceptor)
 {
     while (true)
     {

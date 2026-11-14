@@ -32,5 +32,4 @@ std::string_view HttpRequest::getHost() const noexcept
     return mHeaders.getHost();
 }
 
-
 } // namespace nebula::http

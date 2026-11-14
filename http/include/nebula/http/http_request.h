@@ -68,7 +68,7 @@ T HttpRequest::convertArg(const QueryArgs &args, std::string_view argName)
 }
 
 template <typename T>
-T HttpRequest::convertArgOr(const QueryArgs& args, std::string_view argName, const T &defaultParam)
+T HttpRequest::convertArgOr(const QueryArgs &args, std::string_view argName, const T &defaultParam)
 {
     const auto it = args.find(argName);
     if (it == args.end())
