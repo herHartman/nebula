@@ -16,7 +16,7 @@ using namespace test_support;
 
 namespace
 {
-Task<std::string> readExactly(net::TcpSocket& socket, std::size_t expected)
+Task<std::string> readExactly(net::TcpSocket &socket, std::size_t expected)
 {
     std::string out;
     out.reserve(expected);
@@ -29,12 +29,12 @@ Task<std::string> readExactly(net::TcpSocket& socket, std::size_t expected)
         {
             break;
         }
-        out.append(reinterpret_cast<const char*>(buffer.data()), n);
+        out.append(reinterpret_cast<const char *>(buffer.data()), n);
     }
     co_return out;
 }
 
-Task<void> echoOnce(net::TcpAcceptor& acceptor)
+Task<void> echoOnce(net::TcpAcceptor &acceptor)
 {
     net::TcpSocket socket = co_await acceptor.accept();
     std::vector<std::byte> buffer(64u * 1024u);
@@ -50,7 +50,7 @@ Task<void> echoOnce(net::TcpAcceptor& acceptor)
     co_await socket.close();
 }
 
-Task<void> tcpClientOnce(std::uint16_t port, std::string message, std::string& out)
+Task<void> tcpClientOnce(std::uint16_t port, std::string message, std::string &out)
 {
     net::TcpSocket socket;
     socket.open();
@@ -60,12 +60,12 @@ Task<void> tcpClientOnce(std::uint16_t port, std::string message, std::string& o
     co_await socket.close();
 }
 
-Task<void> writeAllInBackground(net::TcpSocket& socket, const std::string& payload)
+Task<void> writeAllInBackground(net::TcpSocket &socket, const std::string &payload)
 {
     co_await socket.writeAll(asBytes(payload));
 }
 
-Task<void> tcpLargeClient(std::uint16_t port, const std::string& payload, std::string& out)
+Task<void> tcpLargeClient(std::uint16_t port, const std::string &payload, std::string &out)
 {
     net::TcpSocket socket;
     socket.open();
@@ -77,7 +77,7 @@ Task<void> tcpLargeClient(std::uint16_t port, const std::string& payload, std::s
     co_await socket.close();
 }
 
-Task<void> handleShortRequest(net::TcpSocket socket, int& served)
+Task<void> handleShortRequest(net::TcpSocket socket, int &served)
 {
     std::array<std::byte, 256> buffer{};
     const std::size_t n = co_await socket.read(buffer);
@@ -89,7 +89,7 @@ Task<void> handleShortRequest(net::TcpSocket socket, int& served)
     co_await socket.close();
 }
 
-Task<void> acceptLoop(net::TcpAcceptor& acceptor, int count, int& served)
+Task<void> acceptLoop(net::TcpAcceptor &acceptor, int count, int &served)
 {
     for (int i = 0; i < count; ++i)
     {
@@ -98,7 +98,7 @@ Task<void> acceptLoop(net::TcpAcceptor& acceptor, int count, int& served)
     }
 }
 
-Task<void> shortRoundTrip(std::uint16_t port, std::string message, int& ok)
+Task<void> shortRoundTrip(std::uint16_t port, std::string message, int &ok)
 {
     net::TcpSocket socket;
     socket.open();
@@ -114,14 +114,14 @@ Task<void> shortRoundTrip(std::uint16_t port, std::string message, int& ok)
     co_await socket.close();
 }
 
-Task<void> udpEchoOnce(net::UdpSocket& server)
+Task<void> udpEchoOnce(net::UdpSocket &server)
 {
     std::array<std::byte, 2048> buffer{};
     auto received = co_await server.receiveFrom(buffer);
     co_await server.sendTo(std::span(buffer).first(received.size), received.from);
 }
 
-Task<void> udpClient(std::uint16_t serverPort, std::string& echoed, std::string& peer)
+Task<void> udpClient(std::uint16_t serverPort, std::string &echoed, std::string &peer)
 {
     net::UdpSocket client;
     client.open();

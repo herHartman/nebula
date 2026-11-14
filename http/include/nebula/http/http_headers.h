@@ -29,7 +29,8 @@ struct StringHash
     }
 };
 
-using HeaderValues = std::unordered_map<HeaderKey, std::vector<HeaderValue>, StringHash, std::equal_to<>>; class HttpHeaders
+using HeaderValues = std::unordered_map<HeaderKey, std::vector<HeaderValue>, StringHash, std::equal_to<>>;
+class HttpHeaders
 {
   public:
     using Iterator = HeaderValues::iterator;
@@ -86,7 +87,8 @@ using HeaderValues = std::unordered_map<HeaderKey, std::vector<HeaderValue>, Str
     void set(const HeaderKey &key, HeaderValue value);
     void set(const HeaderKey &key, std::vector<HeaderValue> values);
 
-    void add(const HeaderKey &key, HeaderValue value); void add(const HeaderKey &key, std::vector<HeaderValue> values);
+    void add(const HeaderKey &key, HeaderValue value);
+    void add(const HeaderKey &key, std::vector<HeaderValue> values);
 
     void setBasicAuth(std::string username, std::string password);
     void setBearerAuth(std::string token);

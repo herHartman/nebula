@@ -48,7 +48,7 @@ bool percent_decode(std::string_view in, std::string &out)
 }
 
 // a=1&b&c=
-bool parse_query(std::string_view in, QueryArgs& out)
+bool parse_query(std::string_view in, QueryArgs &out)
 {
     while (!in.empty())
     {
@@ -66,7 +66,7 @@ bool parse_query(std::string_view in, QueryArgs& out)
         {
             return false;
         }
-        
+
         std::string value;
         if (eq != std::string_view::npos)
         {
@@ -80,4 +80,3 @@ bool parse_query(std::string_view in, QueryArgs& out)
     return true;
 }
 } // namespace nebula::http::detail
-

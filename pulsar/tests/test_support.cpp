@@ -20,14 +20,14 @@ std::uint16_t freePort(int sockType)
     addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     addr.sin_port = 0;
 
-    if (::bind(fd, reinterpret_cast<::sockaddr*>(&addr), sizeof(addr)) < 0)
+    if (::bind(fd, reinterpret_cast<::sockaddr *>(&addr), sizeof(addr)) < 0)
     {
         ::close(fd);
         throw std::runtime_error("bind() failed");
     }
 
     ::socklen_t len = sizeof(addr);
-    if (::getsockname(fd, reinterpret_cast<::sockaddr*>(&addr), &len) < 0)
+    if (::getsockname(fd, reinterpret_cast<::sockaddr *>(&addr), &len) < 0)
     {
         ::close(fd);
         throw std::runtime_error("getsockname() failed");

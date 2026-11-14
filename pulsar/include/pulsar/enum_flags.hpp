@@ -51,7 +51,7 @@ class Flags
     {
         return mValue != 0;
     }
-
+ 
     constexpr bool operator==(const Flags &other) const noexcept = default;
 
   private:

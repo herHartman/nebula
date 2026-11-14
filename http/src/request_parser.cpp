@@ -53,7 +53,6 @@ const http_parser_settings RequestParser::mSettings = []() {
     return settings;
 }();
 
-
 RequestParser::RequestParser(ParserLimits limits) : mLimits(limits)
 {
     http_parser_init(&mParser, HTTP_REQUEST);
@@ -68,7 +67,7 @@ bool RequestParser::flushUrl()
         mError = ParseError::BadRequest;
         return false;
     }
-    
+
     const auto field = [&](http_parser_url_fields name) -> std::optional<std::string_view> {
         if ((mUrlParser.field_set & (1U << name)) == 0)
         {
@@ -78,7 +77,7 @@ bool RequestParser::flushUrl()
     };
 
     mRequestBuilder.appendPath(field(UF_PATH).value_or("/"));
-    
+
     if (auto query = field(UF_QUERY))
     {
         QueryArgs queryArgs;
@@ -95,7 +94,7 @@ bool RequestParser::flushUrl()
 void RequestParser::flushHeader()
 {
     mHeaderSize += mHeaderSize;
- 
+
     auto end = mHeaderValue.find_first_not_of(" \t");
     if (end != std::string::npos)
     {
@@ -157,7 +156,7 @@ int RequestParser::onHeadersComplete(http_parser *parser)
     return http_request_parser->onHeadersCompleteImpl(parser);
 }
 
-int RequestParser::onMessageBeginImpl(http_parser*)
+int RequestParser::onMessageBeginImpl(http_parser *)
 {
     mState = ParseState::InProgress;
     return 0;
@@ -170,19 +169,19 @@ int RequestParser::onMessageCompleteImpl(http_parser *parser)
     return 0;
 }
 
-int RequestParser::onUrlImpl(http_parser*, const char *data, std::size_t len)
+int RequestParser::onUrlImpl(http_parser *, const char *data, std::size_t len)
 {
     if (mUrl.size() + len > kMaxUrlSize)
     {
-       mError = ParseError::UriTooLong;
-       return -1;
+        mError = ParseError::UriTooLong;
+        return -1;
     }
 
     mUrl.append(data, data + len);
     return 0;
 }
 
-int RequestParser::onHeaderFieldImpl(http_parser*, const char *data, std::size_t len)
+int RequestParser::onHeaderFieldImpl(http_parser *, const char *data, std::size_t len)
 {
     if (!std::exchange(mIsHeaderKey, true))
     {
@@ -200,7 +199,7 @@ int RequestParser::onHeaderFieldImpl(http_parser*, const char *data, std::size_t
     return 0;
 }
 
-int RequestParser::onHeaderValueImpl(http_parser*, const char *data, std::size_t len)
+int RequestParser::onHeaderValueImpl(http_parser *, const char *data, std::size_t len)
 {
     mIsHeaderKey = false;
     mHeaderSize += len;
@@ -226,13 +225,13 @@ int RequestParser::onChunkComplete(http_parser *parser)
     return http_request_parser->onChunkCompleteImpl(parser);
 }
 
-int RequestParser::onHeadersCompleteImpl(http_parser*)
+int RequestParser::onHeadersCompleteImpl(http_parser *)
 {
     const std::optional<HttpMethods> method = to_method(mParser.method);
     if (!method)
     {
         mError = ParseError::MethodNotImplemented;
-        return - 1;
+        return -1;
     }
 
     mRequestBuilder.appendMethod(*method);
@@ -241,18 +240,18 @@ int RequestParser::onHeadersCompleteImpl(http_parser*)
     {
         return -1;
     }
-    
+
     if (!mIsHeaderKey)
     {
         flushHeader();
     }
-    
+
     mRequestBuilder.appendHttpVersion(std::to_string(mParser.http_major) + '.' + std::to_string(mParser.http_minor));
     mState = ParseState::HeadersComplete;
     mRequestBuilder.onHeadersComplete();
-    
+
     const bool chunked = (mParser.flags & F_CHUNKED) != 0;
-    const bool hasLength = mParser.content_length != 0 && mParser.content_length != kNoContentLength;    
+    const bool hasLength = mParser.content_length != 0 && mParser.content_length != kNoContentLength;
 
     if (chunked || hasLength)
     {
@@ -306,4 +305,3 @@ HttpRequest RequestParser::buildRequest() &&
     return std::move(mRequestBuilder).buildRequest();
 }
 } // namespace nebula::http
-
